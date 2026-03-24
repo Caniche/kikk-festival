@@ -11,20 +11,20 @@ const SPEAKERS_DB = {"2011":[{"id":201100,"name":"Ben Hammersley","subtitle":"Ed
 // YEAR VISUAL THEMES — one color identity per edition
 // ════════════════════════════════════════════════════════
 const THEMES = {
-  2024:{ bg:"#1a0030",surface:"#260044",accent:"#c84aff",accentH:"#aa22ee",text:"#fff",muted:"#cc66ff",tagline:"Intelligence Artificielle",bgImg:"/images/2024/hero.png",num:"2024",homepageImg:"/homepage/2024/2024_homepage.jpg" },
-  2023:{ bg:"#002828",surface:"#003838",accent:"#00ffff",accentH:"#00dddd",text:"#fff",muted:"#00cccc",tagline:"Roots & Routes",bgImg:"https://cms.kikk.unseen.co/app/uploads/2023/09/Designs-carres-2000x2000-1-1.jpg",num:"2023",homepageImg:"/homepage/2023/2023_homepage.jpg" },
-  2022:{ bg:"#1a0028",surface:"#280040",accent:"#ff22cc",accentH:"#ee00bb",text:"#fff",muted:"#ff66dd",tagline:"Connected Bodies",bgImg:"https://kikk.dogtest.be/2022/app/uploads/2022/06/og-image.png",num:"2022",homepageImg:"/homepage/2022/2022_homepage.jpg" },
-  2021:{ bg:"#1e1a00",surface:"#2a2400",accent:"#ffd600",accentH:"#eec400",text:"#fff",muted:"#ffee44",tagline:"Alive & Kicking",bgImg:"/images/2021/hero.jpg",num:"2021",homepageImg:"/homepage/2021/2021_homepage.jpg" },
-  2020:{ bg:"#0d0d1e",surface:"#181828",accent:"#aaaadd",accentH:"#9999cc",text:"#fff",muted:"#8888bb",tagline:"Virtual Edition",bgImg:"/images/2020/hero.jpg",num:"2020",homepageImg:"/homepage/2020/2020_homepage.jpg" },
-  2019:{ bg:"#000a2a",surface:"#001040",accent:"#4499ff",accentH:"#2277ee",text:"#fff",muted:"#66aaff",tagline:"Humans & Machines",bgImg:"/images/2019/hero.jpg",num:"2019",homepageImg:"/homepage/2019/2019_homepage.jpg" },
-  2018:{ bg:"#280010",surface:"#3a0018",accent:"#ff2277",accentH:"#ee0055",text:"#fff",muted:"#ff6699",tagline:"In Machines We Trust",bgImg:"/images/2018/hero.jpg",num:"2018",homepageImg:"/homepage/2018/2018_homepage.jpg" },
-  2017:{ bg:"#002200",surface:"#003300",accent:"#44ee66",accentH:"#2abb44",text:"#fff",muted:"#66ff88",tagline:"New Narratives",bgImg:"/images/2017/hero.jpg",num:"2017",homepageImg:"/homepage/2017/2017_homepage.jpg" },
-  2016:{ bg:"#2a1c00",surface:"#3a2800",accent:"#ffbb22",accentH:"#cc9a14",text:"#fff",muted:"#ffcc66",tagline:"In the Mood for Code",bgImg:"/images/2016/hero.png",num:"2016",homepageImg:"/homepage/2016/2016_homepage.jpg" },
-  2015:{ bg:"#cc2244",surface:"#dd3355",accent:"#ff6688",accentH:"#ee4466",text:"#fff",muted:"#ffaabb",tagline:"Fold / Unfold",bgImg:"/images/2015/hero.jpg",num:"2015",homepageImg:"/homepage/2015/2015_homepage.jpg" },
-  2014:{ bg:"#001a30",surface:"#002244",accent:"#00ccff",accentH:"#0099bb",text:"#fff",muted:"#44bbff",tagline:"The State of Play",bgImg:"/images/2014/hero.jpg",num:"2014",homepageImg:"/homepage/2014/2014_homepage.jpg" },
-  2013:{ bg:"#120030",surface:"#1c0044",accent:"#cc66ff",accentH:"#9944dd",text:"#fff",muted:"#dd88ff",tagline:"Next Utopia",bgImg:"/images/2013/hero.jpg",num:"2013",homepageImg:"/homepage/2013/2013_homepage.jpg" },
-  2012:{ bg:"#2a1000",surface:"#3a1800",accent:"#ff7744",accentH:"#ee5522",text:"#fff",muted:"#ffaa77",tagline:"Making Digital Tangible",bgImg:"/images/2012/hero.jpg",num:"2012",homepageImg:"/homepage/2012/2012_homepage.jpg" },
-  2011:{ bg:"#111111",surface:"#1e1e1e",accent:"#dddddd",accentH:"#ffffff",text:"#fff",muted:"#aaaaaa",tagline:"Digital & Society",bgImg:"/images/2011/hero.png",num:"2011",homepageImg:"/homepage/2011/2011_homepage.jpg" },
+  2024:{ bg:"#1a0030",surface:"#260044",accent:"#c84aff",accentH:"#aa22ee",text:"#fff",muted:"#cc66ff",tagline:"Intelligence Artificielle",bgImg:"/homepage/2024/2024_homepage.jpg",num:"2024",homepageImg:"/homepage/2024/2024_homepage.jpg" },
+  2023:{ bg:"#002828",surface:"#003838",accent:"#00ffff",accentH:"#00dddd",text:"#fff",muted:"#00cccc",tagline:"Roots & Routes",bgImg:"/homepage/2023/2023_homepage.jpg",num:"2023",homepageImg:"/homepage/2023/2023_homepage.jpg" },
+  2022:{ bg:"#1a0028",surface:"#280040",accent:"#ff22cc",accentH:"#ee00bb",text:"#fff",muted:"#ff66dd",tagline:"Connected Bodies",bgImg:"/homepage/2022/2022_homepage.jpg",num:"2022",homepageImg:"/homepage/2022/2022_homepage.jpg" },
+  2021:{ bg:"#1e1a00",surface:"#2a2400",accent:"#ffd600",accentH:"#eec400",text:"#fff",muted:"#ffee44",tagline:"Alive & Kicking",bgImg:"/homepage/2021/2021_homepage.jpg",num:"2021",homepageImg:"/homepage/2021/2021_homepage.jpg" },
+  2020:{ bg:"#0d0d1e",surface:"#181828",accent:"#aaaadd",accentH:"#9999cc",text:"#fff",muted:"#8888bb",tagline:"Virtual Edition",bgImg:"/homepage/2020/2020_homepage.jpg",num:"2020",homepageImg:"/homepage/2020/2020_homepage.jpg" },
+  2019:{ bg:"#000a2a",surface:"#001040",accent:"#4499ff",accentH:"#2277ee",text:"#fff",muted:"#66aaff",tagline:"Humans & Machines",bgImg:"/homepage/2019/2019_homepage.jpg",num:"2019",homepageImg:"/homepage/2019/2019_homepage.jpg" },
+  2018:{ bg:"#280010",surface:"#3a0018",accent:"#ff2277",accentH:"#ee0055",text:"#fff",muted:"#ff6699",tagline:"In Machines We Trust",bgImg:"/homepage/2018/2018_homepage.jpg",num:"2018",homepageImg:"/homepage/2018/2018_homepage.jpg" },
+  2017:{ bg:"#002200",surface:"#003300",accent:"#44ee66",accentH:"#2abb44",text:"#fff",muted:"#66ff88",tagline:"New Narratives",bgImg:"/homepage/2017/2017_homepage.jpg",num:"2017",homepageImg:"/homepage/2017/2017_homepage.jpg" },
+  2016:{ bg:"#2a1c00",surface:"#3a2800",accent:"#ffbb22",accentH:"#cc9a14",text:"#fff",muted:"#ffcc66",tagline:"In the Mood for Code",bgImg:"/homepage/2016/2016_homepage.jpg",num:"2016",homepageImg:"/homepage/2016/2016_homepage.jpg" },
+  2015:{ bg:"#cc2244",surface:"#dd3355",accent:"#ff6688",accentH:"#ee4466",text:"#fff",muted:"#ffaabb",tagline:"Fold / Unfold",bgImg:"/homepage/2015/2015_homepage.jpg",num:"2015",homepageImg:"/homepage/2015/2015_homepage.jpg" },
+  2014:{ bg:"#001a30",surface:"#002244",accent:"#00ccff",accentH:"#0099bb",text:"#fff",muted:"#44bbff",tagline:"The State of Play",bgImg:"/homepage/2014/2014_homepage.jpg",num:"2014",homepageImg:"/homepage/2014/2014_homepage.jpg" },
+  2013:{ bg:"#120030",surface:"#1c0044",accent:"#cc66ff",accentH:"#9944dd",text:"#fff",muted:"#dd88ff",tagline:"Next Utopia",bgImg:"/homepage/2013/2013_homepage.jpg",num:"2013",homepageImg:"/homepage/2013/2013_homepage.jpg" },
+  2012:{ bg:"#2a1000",surface:"#3a1800",accent:"#ff7744",accentH:"#ee5522",text:"#fff",muted:"#ffaa77",tagline:"Making Digital Tangible",bgImg:"/homepage/2012/2012_homepage.jpg",num:"2012",homepageImg:"/homepage/2012/2012_homepage.jpg" },
+  2011:{ bg:"#111111",surface:"#1e1e1e",accent:"#dddddd",accentH:"#ffffff",text:"#fff",muted:"#aaaaaa",tagline:"Digital & Society",bgImg:"/homepage/2011/2011_homepage.jpg",num:"2011",homepageImg:"/homepage/2011/2011_homepage.jpg" },
 };
 
 const ALL_YEARS = [2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011];
