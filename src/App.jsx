@@ -137,27 +137,33 @@ const CSS = `
 // ════════════════════════════════════════════════════════
 // HELPER: Speaker photo with fallback
 // ════════════════════════════════════════════════════════
-function SpeakerPhoto({ img, name, size = 80, accent = "#888" }) {
+function SpeakerPhoto({ img, name, size = 80, accent = "#888", square = false }) {
   const [err, setErr] = useState(false);
+  const isFullWidth = size === "100%";
+  const radius = square || isFullWidth ? 0 : (typeof size === "number" && size > 100 ? 12 : "50%");
   if (!img || err) {
     const initials = name.split(" ").map(w => w[0]).filter(Boolean).slice(0,2).join("").toUpperCase();
     return (
       <div style={{
-        width: size, height: size, borderRadius: size > 100 ? 12 : "50%",
+        width: size, height: isFullWidth ? "100%" : size,
+        borderRadius: radius,
         background: `linear-gradient(135deg, ${accent}44, ${accent}22)`,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: size * 0.32, fontWeight: 700, color: accent, flexShrink: 0,
-        border: `1px solid ${accent}33`,
+        fontSize: isFullWidth ? 48 : size * 0.32, fontWeight: 700, color: accent,
+        flexShrink: 0, border: `1px solid ${accent}33`,
       }}>
-        {initials || <User size={size * 0.4} />}
+        {initials || <User size={isFullWidth ? 48 : size * 0.4} />}
       </div>
     );
   }
   return (
     <img
       src={img} alt={name} onError={() => setErr(true)}
-      style={{ width: size, height: size, objectFit: "cover",
-        borderRadius: size > 100 ? 12 : "50%", flexShrink: 0 }}
+      style={{
+        width: size, height: isFullWidth ? "100%" : size,
+        objectFit: "cover", borderRadius: radius,
+        flexShrink: 0, display: "block",
+      }}
     />
   );
 }
@@ -444,21 +450,37 @@ function SpeakerDetail({ speaker, year, theme, onBack }) {
       position:"absolute", inset:0, background:theme.bg,
       overflowY:"auto", zIndex:10,
     }}>
-      {/* Back button */}
-      <button onClick={onBack} style={{
-        position:"fixed", top:20, left:20,
-        display:"flex", alignItems:"center", gap:8,
-        background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)",
-        border:`1px solid ${theme.accent}44`, borderRadius:999,
-        color:theme.text, padding:"10px 18px", cursor:"pointer",
-        fontSize:14, fontWeight:500, fontFamily:"inherit", zIndex:11,
-        transition:"background 0.2s",
-      }}
-        onMouseEnter={e => e.currentTarget.style.background=`${theme.accent}22`}
-        onMouseLeave={e => e.currentTarget.style.background="rgba(0,0,0,0.5)"}
-      >
-        <ArrowLeft size={16} /> Retour {year}
-      </button>
+      {/* Nav buttons */}
+      <div style={{
+        position:"fixed", top:20, left:20, display:"flex", gap:10, zIndex:11,
+      }}>
+        <button onClick={() => navigate("/")} style={{
+          display:"flex", alignItems:"center", gap:8,
+          background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)",
+          border:`1px solid ${theme.accent}44`, borderRadius:999,
+          color:theme.text, padding:"10px 18px", cursor:"pointer",
+          fontSize:14, fontWeight:500, fontFamily:"inherit",
+          transition:"background 0.2s",
+        }}
+          onMouseEnter={e => e.currentTarget.style.background=`${theme.accent}22`}
+          onMouseLeave={e => e.currentTarget.style.background="rgba(0,0,0,0.5)"}
+        >
+          <ArrowLeft size={16} /> Accueil
+        </button>
+        <button onClick={onBack} style={{
+          display:"flex", alignItems:"center", gap:8,
+          background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)",
+          border:`1px solid ${theme.accent}44`, borderRadius:999,
+          color:theme.text, padding:"10px 18px", cursor:"pointer",
+          fontSize:14, fontWeight:500, fontFamily:"inherit",
+          transition:"background 0.2s",
+        }}
+          onMouseEnter={e => e.currentTarget.style.background=`${theme.accent}22`}
+          onMouseLeave={e => e.currentTarget.style.background="rgba(0,0,0,0.5)"}
+        >
+          KIKK {year}
+        </button>
+      </div>
 
       {/* Hero */}
       <div style={{
@@ -517,6 +539,7 @@ function SpeakerDetail({ speaker, year, theme, onBack }) {
           </a>
         )}
       </div>
+      <KikkFooter theme={theme} />
     </div>
   );
 }
@@ -545,11 +568,21 @@ function YearListing({ year, theme, onBack, onSpeakerClick }) {
       position:"absolute", inset:0, background:theme.bg,
       display:"flex", flexDirection:"column", overflow:"hidden",
     }}>
+      {/* Background homepage image */}
+      {theme.bgImg && (
+        <div style={{
+          position:"absolute", inset:0, zIndex:0,
+          backgroundImage:`url(${theme.bgImg})`,
+          backgroundSize:"cover", backgroundPosition:"center",
+          opacity:0.12, pointerEvents:"none",
+        }} />
+      )}
       {/* Header */}
       <div style={{
         background:theme.surface, borderBottom:`1px solid ${theme.accent}22`,
         padding:"20px 28px", flexShrink:0,
         display:"flex", alignItems:"center", gap:20,
+        position:"relative", zIndex:1,
       }}>
         <button onClick={onBack} style={{
           display:"flex", alignItems:"center", gap:6,
@@ -588,15 +621,15 @@ function YearListing({ year, theme, onBack, onSpeakerClick }) {
       </div>
 
       {/* Grid */}
-      <div style={{ flex:1, overflowY:"auto", padding:"24px 28px" }}>
+      <div style={{ flex:1, overflowY:"auto", padding:"24px 28px", position:"relative", zIndex:1 }}>
         {loading ? (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:12 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(200px, 1fr))", gap:16 }}>
             {Array(12).fill(0).map((_, i) => (
-              <div key={i} className="skeleton" style={{ height:90, borderRadius:12 }} />
+              <div key={i} className="skeleton" style={{ paddingTop:"130%", borderRadius:16 }} />
             ))}
           </div>
         ) : (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:12 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(200px, 1fr))", gap:16, paddingBottom:64 }}>
             {filtered.map((s, i) => (
               <SpeakerCard key={s.id} speaker={s} theme={theme}
                 delay={Math.min(i * 30, 300)}
@@ -604,6 +637,9 @@ function YearListing({ year, theme, onBack, onSpeakerClick }) {
             ))}
           </div>
         )}
+      </div>
+      <div style={{ position:"relative", zIndex:1 }}>
+        <KikkFooter theme={theme} />
       </div>
     </div>
   );
@@ -723,6 +759,44 @@ function matchPath(path) {
   const year = path.match(/^\/year\/(\d+)\/?$/);
   if (year) return { view: "year", year: parseInt(year[1], 10) };
   return { view: "landing" };
+}
+
+// ════════════════════════════════════════════════════════
+// KIKK FOOTER
+// ════════════════════════════════════════════════════════
+function KikkFooter({ theme, fixed = false }) {
+  return (
+    <div style={{
+      position: fixed ? "fixed" : "relative",
+      bottom: 0, left: 0, right: 0,
+      padding: "10px 24px",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      background: fixed
+        ? `linear-gradient(0deg, ${theme.bg}ee 0%, transparent 100%)`
+        : `linear-gradient(0deg, ${theme.bg} 0%, transparent 100%)`,
+      zIndex: fixed ? 50 : 1,
+      pointerEvents: "none",
+    }}>
+      <a
+        href="https://galaxy.kikk.be/"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          pointerEvents: "all",
+          display: "inline-flex", alignItems: "center", gap: 6,
+          color: theme.muted, fontSize: 12, textDecoration: "none",
+          letterSpacing: 1, textTransform: "uppercase",
+          opacity: 0.7, transition: "opacity 0.2s",
+          fontWeight: 500,
+        }}
+        onMouseEnter={e => e.currentTarget.style.opacity = "1"}
+        onMouseLeave={e => e.currentTarget.style.opacity = "0.7"}
+      >
+        <ExternalLink size={11} />
+        KIKK Galaxy
+      </a>
+    </div>
+  );
 }
 
 // ════════════════════════════════════════════════════════
@@ -899,6 +973,9 @@ function LandingPage() {
             }}
           />
         )}
+
+        {/* Footer */}
+        <KikkFooter theme={theme} fixed />
       </div>
     </>
   );
