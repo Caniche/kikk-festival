@@ -1056,10 +1056,10 @@ function YearPage({ year }) {
     <>
       <style>{CSS}</style>
       <GlobalNav activeYear={year} theme={theme} />
+      {/* Container starts exactly below the 57px nav bar */}
       <div style={{
-        width: "100vw", height: "100vh", position: "relative",
+        position: "fixed", top: 57, left: 0, right: 0, bottom: 0,
         overflow: "hidden", background: theme.bg,
-        paddingTop: 57,
       }}>
         <YearListing
           year={year}
@@ -1106,7 +1106,7 @@ function SpeakerPage({ year, slug }) {
       <style>{CSS}</style>
       <GlobalNav activeYear={year} theme={theme} />
       <div style={{
-        width: "100vw", height: "100vh", position: "relative",
+        position: "fixed", top: 57, left: 0, right: 0, bottom: 0,
         overflow: "hidden", background: theme.bg,
       }}>
         <SpeakerDetail
