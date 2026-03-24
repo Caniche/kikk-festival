@@ -485,37 +485,21 @@ function SpeakerDetail({ speaker, year, theme, onBack }) {
       position:"absolute", inset:0, background:theme.bg,
       overflowY:"auto", zIndex:10,
     }}>
-      {/* Nav buttons */}
-      <div style={{
-        position:"fixed", top:20, left:20, display:"flex", gap:10, zIndex:11,
-      }}>
-        <button onClick={() => navigate("/")} style={{
-          display:"flex", alignItems:"center", gap:8,
-          background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)",
-          border:`1px solid ${theme.accent}44`, borderRadius:999,
-          color:theme.text, padding:"10px 18px", cursor:"pointer",
-          fontSize:14, fontWeight:500, fontFamily:"inherit",
-          transition:"background 0.2s",
-        }}
-          onMouseEnter={e => e.currentTarget.style.background=`${theme.accent}22`}
-          onMouseLeave={e => e.currentTarget.style.background="rgba(0,0,0,0.5)"}
-        >
-          <ArrowLeft size={16} /> Accueil
-        </button>
-        <button onClick={onBack} style={{
-          display:"flex", alignItems:"center", gap:8,
-          background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)",
-          border:`1px solid ${theme.accent}44`, borderRadius:999,
-          color:theme.text, padding:"10px 18px", cursor:"pointer",
-          fontSize:14, fontWeight:500, fontFamily:"inherit",
-          transition:"background 0.2s",
-        }}
-          onMouseEnter={e => e.currentTarget.style.background=`${theme.accent}22`}
-          onMouseLeave={e => e.currentTarget.style.background="rgba(0,0,0,0.5)"}
-        >
-          KIKK {year}
-        </button>
-      </div>
+      {/* Back to year listing */}
+      <button onClick={onBack} style={{
+        position:"fixed", top:68, left:20,
+        display:"flex", alignItems:"center", gap:8,
+        background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)",
+        border:`1px solid ${theme.accent}44`, borderRadius:999,
+        color:theme.text, padding:"8px 16px", cursor:"pointer",
+        fontSize:13, fontWeight:500, fontFamily:"inherit",
+        transition:"background 0.2s", zIndex:11,
+      }}
+        onMouseEnter={e => e.currentTarget.style.background=`${theme.accent}22`}
+        onMouseLeave={e => e.currentTarget.style.background="rgba(0,0,0,0.5)"}
+      >
+        <ArrowLeft size={14} /> KIKK {year}
+      </button>
 
       {/* Hero */}
       <div style={{
@@ -582,7 +566,7 @@ function SpeakerDetail({ speaker, year, theme, onBack }) {
 // ════════════════════════════════════════════════════════
 // YEAR LISTING PAGE
 // ════════════════════════════════════════════════════════
-function YearListing({ year, theme, onBack, onSpeakerClick }) {
+function YearListing({ year, theme, onSpeakerClick }) {
   const [speakers, setSpeakers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQ, setSearchQ] = useState("");
@@ -628,15 +612,6 @@ function YearListing({ year, theme, onBack, onSpeakerClick }) {
         display:"flex", alignItems:"center", gap:20,
         position:"relative", zIndex:1,
       }}>
-        <button onClick={onBack} style={{
-          display:"flex", alignItems:"center", gap:6,
-          background:"none", border:`1px solid ${theme.accent}33`,
-          borderRadius:8, color:theme.text, padding:"8px 14px",
-          cursor:"pointer", fontSize:13, fontWeight:500, fontFamily:"inherit",
-        }}>
-          <ArrowLeft size={15} /> Accueil
-        </button>
-
         <div style={{ flex:1 }}>
           <div style={{ fontSize:22, fontWeight:800, color:theme.text }}>{year}</div>
           <div style={{ fontSize:12, color:theme.accent, letterSpacing:1 }}>{theme.tagline}</div>
@@ -688,92 +663,151 @@ function YearListing({ year, theme, onBack, onSpeakerClick }) {
 }
 
 // ════════════════════════════════════════════════════════
-// NAVIGATION BAR (overlaid on landing)
+// GLOBAL NAV — persistent on all pages, owns search state
 // ════════════════════════════════════════════════════════
-function NavBar({ currentYear, onYearSelect, onSearchOpen, theme }) {
+function GlobalNav({ activeYear, theme }) {
   const [dropOpen, setDropOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const dropRef = useRef(null);
 
   useEffect(() => {
-    const handler = e => { if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false); };
+    const handler = e => {
+      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
+    };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  return (
-    <div style={{
-      position:"fixed", top:0, left:0, right:0, zIndex:100,
-      display:"flex", alignItems:"center", justifyContent:"space-between",
-      padding:"16px 28px",
-      background:`linear-gradient(180deg, ${theme.bg}cc 0%, transparent 100%)`,
-    }}>
-      {/* KIKK wordmark */}
-      <div style={{
-        fontSize:18, fontWeight:900, letterSpacing:4,
-        color:theme.accent, textTransform:"uppercase",
-      }}>
-        KIKK DB
-      </div>
+  // Global keyboard shortcut: "/" opens search from anywhere
+  useEffect(() => {
+    const handler = e => {
+      if (e.key === "/" && !searchOpen && e.target.tagName !== "INPUT") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+      if (e.key === "Escape") setSearchOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [searchOpen]);
 
-      {/* Year dropdown */}
-      <div ref={dropRef} style={{ position:"relative" }}>
+  return (
+    <>
+      <div style={{
+        position:"fixed", top:0, left:0, right:0, zIndex:200,
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+        padding:"12px 24px",
+        background:"rgba(0,0,0,0.55)",
+        backdropFilter:"blur(16px)",
+        WebkitBackdropFilter:"blur(16px)",
+        borderBottom:"1px solid rgba(255,255,255,0.08)",
+      }}>
+        {/* Logo — navigates home */}
         <button
-          onClick={() => setDropOpen(v => !v)}
+          onClick={() => navigate("/")}
+          style={{
+            background:"none", border:"none", cursor:"pointer", padding:0,
+            fontSize:16, fontWeight:900, letterSpacing:4,
+            color:theme.accent, textTransform:"uppercase",
+            fontFamily:"inherit",
+            transition:"opacity 0.2s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity="0.7"}
+          onMouseLeave={e => e.currentTarget.style.opacity="1"}
+        >
+          KIKK MEMORIES
+        </button>
+
+        {/* Year picker */}
+        <div ref={dropRef} style={{ position:"relative" }}>
+          <button
+            onClick={() => setDropOpen(v => !v)}
+            style={{
+              display:"flex", alignItems:"center", gap:8,
+              background:"rgba(255,255,255,0.08)",
+              border:`1px solid ${theme.accent}44`, borderRadius:999,
+              color:theme.text, padding:"7px 14px",
+              cursor:"pointer", fontSize:14, fontWeight:700, fontFamily:"inherit",
+              transition:"background 0.2s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.14)"}
+            onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"}
+          >
+            {activeYear}
+            <ChevronDown size={14} style={{ transform: dropOpen ? "rotate(180deg)" : "none", transition:"0.2s" }} />
+          </button>
+          {dropOpen && (
+            <div style={{
+              position:"absolute", top:"calc(100% + 8px)", left:"50%",
+              transform:"translateX(-50%)",
+              background:"#0d0d0d", border:"1px solid rgba(255,255,255,0.12)",
+              borderRadius:12, padding:8, zIndex:300,
+              boxShadow:"0 16px 48px rgba(0,0,0,0.8)",
+              display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:4, minWidth:220,
+            }}>
+              {ALL_YEARS.map(yr => {
+                const t = THEMES[yr];
+                const isActive = yr === activeYear;
+                return (
+                  <button key={yr}
+                    onClick={() => {
+                      try { sessionStorage.setItem("kikk_last_year", String(yr)); } catch {}
+                      navigate(`/year/${yr}`);
+                      setDropOpen(false);
+                    }}
+                    style={{
+                      background: isActive ? `${t.accent}33` : "transparent",
+                      border:`1px solid ${isActive ? t.accent : "transparent"}`,
+                      borderRadius:8, color: isActive ? t.accent : "#aaa",
+                      padding:"6px", cursor:"pointer", fontSize:13, fontWeight:600,
+                      fontFamily:"inherit", textAlign:"center", transition:"all 0.15s",
+                    }}
+                    onMouseEnter={e => { if(!isActive) e.currentTarget.style.background="rgba(255,255,255,0.06)"; }}
+                    onMouseLeave={e => { if(!isActive) e.currentTarget.style.background="transparent"; }}
+                  >
+                    {yr}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Search button */}
+        <button
+          onClick={() => setSearchOpen(true)}
           style={{
             display:"flex", alignItems:"center", gap:8,
-            background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)",
+            background:"rgba(255,255,255,0.08)",
             border:`1px solid ${theme.accent}44`, borderRadius:999,
-            color:theme.text, padding:"8px 16px",
-            cursor:"pointer", fontSize:15, fontWeight:700, fontFamily:"inherit",
-          }}>
-          {currentYear}
-          <ChevronDown size={15} style={{ transform: dropOpen ? "rotate(180deg)" : "none", transition:"0.2s" }} />
+            color:theme.text, padding:"7px 16px",
+            cursor:"pointer", fontSize:13, fontFamily:"inherit",
+            transition:"background 0.2s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.14)"}
+          onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"}
+        >
+          <Search size={14} style={{ color:theme.accent }} />
+          Rechercher
+          <span style={{ fontSize:11, color:theme.muted, marginLeft:4, opacity:0.7 }}>/</span>
         </button>
-        {dropOpen && (
-          <div style={{
-            position:"absolute", top:"calc(100% + 8px)", left:"50%",
-            transform:"translateX(-50%)",
-            background:"#111", border:"1px solid rgba(255,255,255,0.12)",
-            borderRadius:12, padding:8, zIndex:200,
-            boxShadow:"0 16px 48px rgba(0,0,0,0.6)",
-            display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:4, minWidth:220,
-          }}>
-            {ALL_YEARS.map(yr => {
-              const t = THEMES[yr];
-              return (
-                <button key={yr}
-                  onClick={() => { onYearSelect(yr); setDropOpen(false); }}
-                  style={{
-                    background: yr === currentYear ? `${t.accent}33` : "transparent",
-                    border:`1px solid ${yr === currentYear ? t.accent : "transparent"}`,
-                    borderRadius:8, color: yr === currentYear ? t.accent : "#aaa",
-                    padding:"6px", cursor:"pointer", fontSize:13, fontWeight:600,
-                    fontFamily:"inherit", textAlign:"center",
-                    transition:"all 0.15s",
-                  }}
-                  onMouseEnter={e => { if(yr !== currentYear) e.currentTarget.style.background="rgba(255,255,255,0.06)"; }}
-                  onMouseLeave={e => { if(yr !== currentYear) e.currentTarget.style.background="transparent"; }}
-                >
-                  {yr}
-                </button>
-              );
-            })}
-          </div>
-        )}
       </div>
 
-      {/* Search */}
-      <button onClick={onSearchOpen} style={{
-        display:"flex", alignItems:"center", gap:8,
-        background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)",
-        border:`1px solid ${theme.accent}44`, borderRadius:999,
-        color:theme.text, padding:"8px 18px",
-        cursor:"pointer", fontSize:14, fontFamily:"inherit",
-      }}>
-        <Search size={15} style={{ color:theme.accent }} />
-        Rechercher
-      </button>
-    </div>
+      {/* Search modal — owned by GlobalNav */}
+      {searchOpen && (
+        <SearchModal
+          onClose={() => setSearchOpen(false)}
+          onSelectSpeaker={(s, yr) => {
+            setSearchOpen(false);
+            navigate(`/year/${yr}/speaker/${toSlug(s.name)}`);
+          }}
+          onSelectYear={(yr) => {
+            setSearchOpen(false);
+            navigate(`/year/${yr}`);
+          }}
+        />
+      )}
+    </>
   );
 }
 
@@ -876,7 +910,6 @@ function LandingPage() {
   };
 
   const [yearIdx, setYearIdx] = useState(savedIdx);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [animDir, setAnimDir] = useState(1);
   const [key, setKey] = useState(0);
 
@@ -1003,31 +1036,8 @@ function LandingPage() {
           Cliquez pour explorer · ← → pour naviguer
         </div>
 
-        {/* Navbar */}
-        <NavBar
-          currentYear={currentYear}
-          onYearSelect={(yr) => {
-            try { sessionStorage.setItem("kikk_last_year", String(yr)); } catch {}
-            navigate(`/year/${yr}`);
-          }}
-          onSearchOpen={() => setSearchOpen(true)}
-          theme={theme}
-        />
-
-        {/* Search modal */}
-        {searchOpen && (
-          <SearchModal
-            onClose={() => setSearchOpen(false)}
-            onSelectSpeaker={(s, yr) => {
-              setSearchOpen(false);
-              navigate(`/year/${yr}/speaker/${toSlug(s.name)}`);
-            }}
-            onSelectYear={(yr) => {
-              setSearchOpen(false);
-              navigate(`/year/${yr}`);
-            }}
-          />
-        )}
+        {/* Global nav */}
+        <GlobalNav activeYear={currentYear} theme={theme} />
 
         {/* Footer */}
         <KikkFooter theme={theme} />
@@ -1045,17 +1055,19 @@ function YearPage({ year }) {
   return (
     <>
       <style>{CSS}</style>
+      <GlobalNav activeYear={year} theme={theme} />
       <div style={{
         width: "100vw", height: "100vh", position: "relative",
         overflow: "hidden", background: theme.bg,
+        paddingTop: 57,
       }}>
         <YearListing
           year={year}
           theme={theme}
-          onBack={() => navigate("/")}
           onSpeakerClick={(s) => navigate(`/year/${year}/speaker/${toSlug(s.name)}`)}
         />
       </div>
+      <KikkFooter theme={theme} />
     </>
   );
 }
@@ -1092,6 +1104,7 @@ function SpeakerPage({ year, slug }) {
   return (
     <>
       <style>{CSS}</style>
+      <GlobalNav activeYear={year} theme={theme} />
       <div style={{
         width: "100vw", height: "100vh", position: "relative",
         overflow: "hidden", background: theme.bg,
