@@ -132,6 +132,23 @@ const CSS = `
     background-size: 400px 100%;
     animation: shimmer 1.4s infinite;
   }
+
+  @keyframes kenburns-a {
+    0%   { transform: scale(1)    translate(0%,    0%); }
+    100% { transform: scale(1.12) translate(-2.5%, -1.5%); }
+  }
+  @keyframes kenburns-b {
+    0%   { transform: scale(1.08) translate(-2%, -1%); }
+    100% { transform: scale(1)    translate(1.5%,  1%); }
+  }
+  .bg-kenburns-a {
+    animation: kenburns-a 28s ease-in-out infinite alternate;
+    transform-origin: center center;
+  }
+  .bg-kenburns-b {
+    animation: kenburns-b 32s ease-in-out infinite alternate;
+    transform-origin: 60% 40%;
+  }
 `;
 
 // ════════════════════════════════════════════════════════
@@ -586,14 +603,23 @@ function YearListing({ year, theme, onBack, onSpeakerClick }) {
       position:"absolute", inset:0, background:theme.bg,
       display:"flex", flexDirection:"column", overflow:"hidden",
     }}>
-      {/* Background homepage image */}
+      {/* Background homepage image — Ken Burns effect */}
       {theme.bgImg && (
         <div style={{
-          position:"absolute", inset:0, zIndex:0,
-          backgroundImage:`url(${theme.bgImg})`,
-          backgroundSize:"cover", backgroundPosition:"center",
-          opacity:0.12, pointerEvents:"none",
-        }} />
+          position:"absolute", inset:"-8%", zIndex:0,
+          overflow:"hidden", pointerEvents:"none",
+        }}>
+          <div
+            className={`bg-kenburns-${parseInt(year, 10) % 2 === 0 ? "a" : "b"}`}
+            style={{
+              width:"100%", height:"100%",
+              backgroundImage:`url(${theme.bgImg})`,
+              backgroundSize:"cover", backgroundPosition:"center",
+              opacity:0.15,
+              willChange:"transform",
+            }}
+          />
+        </div>
       )}
       {/* Header */}
       <div style={{
