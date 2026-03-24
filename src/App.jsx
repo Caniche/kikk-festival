@@ -289,29 +289,47 @@ function SpeakerCard({ speaker, theme, onClick, delay = 0 }) {
         animationDelay: `${delay}ms`,
         background: theme.surface,
         border: `1px solid ${theme.accent}22`,
-        borderRadius: 12, padding: "16px",
-        cursor: "pointer", display: "flex", gap: 14, alignItems: "flex-start",
-        boxShadow: `0 2px 8px rgba(0,0,0,0.3)`,
+        borderRadius: 16, overflow: "hidden",
+        cursor: "pointer",
+        display: "flex", flexDirection: "column",
+        boxShadow: `0 4px 16px rgba(0,0,0,0.4)`,
+        transition: "transform 0.18s ease, box-shadow 0.18s ease",
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = "translateY(-4px)";
+        e.currentTarget.style.boxShadow = `0 12px 32px rgba(0,0,0,0.5), 0 0 0 1px ${theme.accent}55`;
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = `0 4px 16px rgba(0,0,0,0.4)`;
       }}
     >
-      <SpeakerPhoto img={speaker.img} name={speaker.name} size={60} accent={theme.accent} />
-      <div style={{ overflow: "hidden", flex: 1 }}>
+      {/* Square portrait image */}
+      <div style={{ width: "100%", paddingTop: "100%", position: "relative", flexShrink: 0, background: `${theme.accent}11` }}>
+        <div style={{ position: "absolute", inset: 0 }}>
+          <SpeakerPhoto img={speaker.img} name={speaker.name} size="100%" accent={theme.accent} square />
+        </div>
+      </div>
+      {/* Name + subtitle */}
+      <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 4 }}>
         <div style={{
-          fontSize: 15, fontWeight: 600, color: theme.text,
-          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+          fontSize: 14, fontWeight: 700, color: theme.text,
+          lineHeight: 1.3,
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+          overflow: "hidden",
         }}>
           {speaker.name}
         </div>
         {speaker.subtitle && (
           <div style={{
-            fontSize: 12, color: theme.muted, marginTop: 3,
-            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            fontSize: 11, color: theme.muted, lineHeight: 1.35,
+            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+            overflow: "hidden",
           }}>
             {speaker.subtitle}
           </div>
         )}
       </div>
-      <ChevronRight size={16} style={{ color: theme.muted, flexShrink: 0, marginTop: 4 }} />
     </div>
   );
 }
@@ -638,9 +656,7 @@ function YearListing({ year, theme, onBack, onSpeakerClick }) {
           </div>
         )}
       </div>
-      <div style={{ position:"relative", zIndex:1 }}>
-        <KikkFooter theme={theme} />
-      </div>
+      <KikkFooter theme={theme} />
     </div>
   );
 }
@@ -764,17 +780,15 @@ function matchPath(path) {
 // ════════════════════════════════════════════════════════
 // KIKK FOOTER
 // ════════════════════════════════════════════════════════
-function KikkFooter({ theme, fixed = false }) {
+function KikkFooter({ theme }) {
   return (
     <div style={{
-      position: fixed ? "fixed" : "relative",
+      position: "fixed",
       bottom: 0, left: 0, right: 0,
-      padding: "10px 24px",
+      padding: "20px 24px 14px",
       display: "flex", alignItems: "center", justifyContent: "center",
-      background: fixed
-        ? `linear-gradient(0deg, ${theme.bg}ee 0%, transparent 100%)`
-        : `linear-gradient(0deg, ${theme.bg} 0%, transparent 100%)`,
-      zIndex: fixed ? 50 : 1,
+      background: `linear-gradient(0deg, ${theme.bg}f0 0%, transparent 100%)`,
+      zIndex: 100,
       pointerEvents: "none",
     }}>
       <a
@@ -784,15 +798,15 @@ function KikkFooter({ theme, fixed = false }) {
         style={{
           pointerEvents: "all",
           display: "inline-flex", alignItems: "center", gap: 6,
-          color: theme.muted, fontSize: 12, textDecoration: "none",
-          letterSpacing: 1, textTransform: "uppercase",
-          opacity: 0.7, transition: "opacity 0.2s",
-          fontWeight: 500,
+          color: theme.muted, fontSize: 11, textDecoration: "none",
+          letterSpacing: 1.5, textTransform: "uppercase",
+          opacity: 0.6, transition: "opacity 0.2s",
+          fontWeight: 600,
         }}
         onMouseEnter={e => e.currentTarget.style.opacity = "1"}
-        onMouseLeave={e => e.currentTarget.style.opacity = "0.7"}
+        onMouseLeave={e => e.currentTarget.style.opacity = "0.6"}
       >
-        <ExternalLink size={11} />
+        <ExternalLink size={10} />
         KIKK Galaxy
       </a>
     </div>
@@ -826,7 +840,16 @@ export default function App() {
 // LANDING PAGE — year carousel
 // ════════════════════════════════════════════════════════
 function LandingPage() {
-  const [yearIdx, setYearIdx] = useState(0);
+  // Restore last-viewed year from sessionStorage so back-navigation lands on right year
+  const savedIdx = () => {
+    try {
+      const yr = parseInt(sessionStorage.getItem("kikk_last_year"), 10);
+      const idx = ALL_YEARS.indexOf(yr);
+      return idx >= 0 ? idx : 0;
+    } catch { return 0; }
+  };
+
+  const [yearIdx, setYearIdx] = useState(savedIdx);
   const [searchOpen, setSearchOpen] = useState(false);
   const [animDir, setAnimDir] = useState(1);
   const [key, setKey] = useState(0);
@@ -881,7 +904,10 @@ function LandingPage() {
             year={currentYear}
             theme={theme}
             isActive={true}
-            onClick={() => navigate(`/year/${currentYear}`)}
+            onClick={() => {
+              try { sessionStorage.setItem("kikk_last_year", String(currentYear)); } catch {}
+              navigate(`/year/${currentYear}`);
+            }}
           />
         </div>
 
@@ -954,7 +980,10 @@ function LandingPage() {
         {/* Navbar */}
         <NavBar
           currentYear={currentYear}
-          onYearSelect={(yr) => { navigate(`/year/${yr}`); }}
+          onYearSelect={(yr) => {
+            try { sessionStorage.setItem("kikk_last_year", String(yr)); } catch {}
+            navigate(`/year/${yr}`);
+          }}
           onSearchOpen={() => setSearchOpen(true)}
           theme={theme}
         />
@@ -975,7 +1004,7 @@ function LandingPage() {
         )}
 
         {/* Footer */}
-        <KikkFooter theme={theme} fixed />
+        <KikkFooter theme={theme} />
       </div>
     </>
   );
