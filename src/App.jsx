@@ -700,6 +700,32 @@ function NavBar({ currentYear, onYearSelect, onSearchOpen, theme }) {
 }
 
 // ════════════════════════════════════════════════════════
+// MINIMAL HISTORY-API ROUTER (no external deps)
+// ════════════════════════════════════════════════════════
+function useRouter() {
+  const [path, setPath] = useState(window.location.pathname);
+  useEffect(() => {
+    const onPop = () => setPath(window.location.pathname);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  return path;
+}
+
+function navigate(to) {
+  window.history.pushState(null, "", to);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+}
+
+function matchPath(path) {
+  const speaker = path.match(/^\/year\/(\d+)\/speaker\/([^/]+)\/?$/);
+  if (speaker) return { view: "speaker", year: parseInt(speaker[1], 10), slug: speaker[2] };
+  const year = path.match(/^\/year\/(\d+)\/?$/);
+  if (year) return { view: "year", year: parseInt(year[1], 10) };
+  return { view: "landing" };
+}
+
+// ════════════════════════════════════════════════════════
 // SLUG UTILITIES
 // ════════════════════════════════════════════════════════
 const toSlug = (name) =>
@@ -714,20 +740,18 @@ const findSpeakerBySlug = (year, slug) => {
 // MAIN APP — router shell
 // ════════════════════════════════════════════════════════
 export default function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/year/:year" element={<YearPage />} />
-      <Route path="/year/:year/speaker/:slug" element={<SpeakerPage />} />
-    </Routes>
-  );
+  const path = useRouter();
+  const route = matchPath(path);
+
+  if (route.view === "speaker") return <SpeakerPage year={route.year} slug={route.slug} />;
+  if (route.view === "year")    return <YearPage year={route.year} />;
+  return <LandingPage />;
 }
 
 // ════════════════════════════════════════════════════════
 // LANDING PAGE — year carousel
 // ════════════════════════════════════════════════════════
 function LandingPage() {
-  const nav = useNavigate();
   const [yearIdx, setYearIdx] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [animDir, setAnimDir] = useState(1);
@@ -783,7 +807,7 @@ function LandingPage() {
             year={currentYear}
             theme={theme}
             isActive={true}
-            onClick={() => nav(`/year/${currentYear}`)}
+            onClick={() => navigate(`/year/${currentYear}`)}
           />
         </div>
 
@@ -856,7 +880,7 @@ function LandingPage() {
         {/* Navbar */}
         <NavBar
           currentYear={currentYear}
-          onYearSelect={(yr) => { nav(`/year/${yr}`); }}
+          onYearSelect={(yr) => { navigate(`/year/${yr}`); }}
           onSearchOpen={() => setSearchOpen(true)}
           theme={theme}
         />
@@ -867,11 +891,11 @@ function LandingPage() {
             onClose={() => setSearchOpen(false)}
             onSelectSpeaker={(s, yr) => {
               setSearchOpen(false);
-              nav(`/year/${yr}/speaker/${toSlug(s.name)}`);
+              navigate(`/year/${yr}/speaker/${toSlug(s.name)}`);
             }}
             onSelectYear={(yr) => {
               setSearchOpen(false);
-              nav(`/year/${yr}`);
+              navigate(`/year/${yr}`);
             }}
           />
         )}
@@ -883,11 +907,8 @@ function LandingPage() {
 // ════════════════════════════════════════════════════════
 // YEAR PAGE
 // ════════════════════════════════════════════════════════
-function YearPage() {
-  const { year } = useParams();
-  const nav = useNavigate();
-  const yr = parseInt(year, 10);
-  const theme = THEMES[yr] || THEMES[ALL_YEARS[0]];
+function YearPage({ year }) {
+  const theme = THEMES[year] || THEMES[ALL_YEARS[0]];
 
   return (
     <>
@@ -897,10 +918,10 @@ function YearPage() {
         overflow: "hidden", background: theme.bg,
       }}>
         <YearListing
-          year={yr}
+          year={year}
           theme={theme}
-          onBack={() => nav("/")}
-          onSpeakerClick={(s) => nav(`/year/${yr}/speaker/${toSlug(s.name)}`)}
+          onBack={() => navigate("/")}
+          onSpeakerClick={(s) => navigate(`/year/${year}/speaker/${toSlug(s.name)}`)}
         />
       </div>
     </>
@@ -910,12 +931,9 @@ function YearPage() {
 // ════════════════════════════════════════════════════════
 // SPEAKER PAGE
 // ════════════════════════════════════════════════════════
-function SpeakerPage() {
-  const { year, slug } = useParams();
-  const nav = useNavigate();
-  const yr = parseInt(year, 10);
-  const theme = THEMES[yr] || THEMES[ALL_YEARS[0]];
-  const speaker = findSpeakerBySlug(yr, slug);
+function SpeakerPage({ year, slug }) {
+  const theme = THEMES[year] || THEMES[ALL_YEARS[0]];
+  const speaker = findSpeakerBySlug(year, slug);
 
   if (!speaker) {
     return (
@@ -927,12 +945,12 @@ function SpeakerPage() {
           background: theme.bg, color: theme.text, gap: 20,
         }}>
           <div style={{ fontSize: 18 }}>Speaker introuvable.</div>
-          <button onClick={() => nav(`/year/${yr}`)} style={{
+          <button onClick={() => navigate(`/year/${year}`)} style={{
             background: "none", border: `1px solid ${theme.accent}`,
             borderRadius: 8, color: theme.accent, padding: "10px 20px",
             cursor: "pointer", fontSize: 14, fontFamily: "inherit",
           }}>
-            ← Retour {yr}
+            ← Retour {year}
           </button>
         </div>
       </>
@@ -948,9 +966,9 @@ function SpeakerPage() {
       }}>
         <SpeakerDetail
           speaker={speaker}
-          year={yr}
+          year={year}
           theme={theme}
-          onBack={() => nav(`/year/${yr}`)}
+          onBack={() => navigate(`/year/${year}`)}
         />
       </div>
     </>
