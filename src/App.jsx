@@ -700,38 +700,58 @@ function NavBar({ currentYear, onYearSelect, onSearchOpen, theme }) {
 }
 
 // ════════════════════════════════════════════════════════
-// MAIN APP
+// SLUG UTILITIES
+// ════════════════════════════════════════════════════════
+const toSlug = (name) =>
+  name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+const findSpeakerBySlug = (year, slug) => {
+  const speakers = SPEAKERS_DB[String(year)] || [];
+  return speakers.find((s) => toSlug(s.name) === slug) || null;
+};
+
+// ════════════════════════════════════════════════════════
+// MAIN APP — router shell
 // ════════════════════════════════════════════════════════
 export default function App() {
-  const [view, setView] = useState("landing"); // landing | year | speaker
-  const [yearIdx, setYearIdx] = useState(0);   // index in ALL_YEARS
-  const [selectedYear, setSelectedYear] = useState(null);
-  const [selectedSpeaker, setSelectedSpeaker] = useState(null);
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/year/:year" element={<YearPage />} />
+      <Route path="/year/:year/speaker/:slug" element={<SpeakerPage />} />
+    </Routes>
+  );
+}
+
+// ════════════════════════════════════════════════════════
+// LANDING PAGE — year carousel
+// ════════════════════════════════════════════════════════
+function LandingPage() {
+  const nav = useNavigate();
+  const [yearIdx, setYearIdx] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [animDir, setAnimDir] = useState(1); // 1 = right, -1 = left
+  const [animDir, setAnimDir] = useState(1);
   const [key, setKey] = useState(0);
 
   const currentYear = ALL_YEARS[yearIdx];
   const theme = THEMES[currentYear];
 
-  // Keyboard navigation
   useEffect(() => {
     const handler = (e) => {
-      if (view !== "landing") return;
-      if (e.key === "ArrowLeft") navigate(-1);
-      if (e.key === "ArrowRight") navigate(1);
+      if (e.key === "ArrowLeft") navigateYear(-1);
+      if (e.key === "ArrowRight") navigateYear(1);
       if (e.key === "/") { e.preventDefault(); setSearchOpen(true); }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [view, yearIdx]);
+  }, [yearIdx]);
 
-  const navigate = useCallback((dir) => {
+  const navigateYear = useCallback((dir) => {
     setAnimDir(dir);
-    setYearIdx(i => {
+    setYearIdx((i) => {
       const n = i + dir;
       if (n < 0 || n >= ALL_YEARS.length) return i;
-      setKey(k => k + 1);
+      setKey((k) => k + 1);
       return n;
     });
   }, []);
@@ -741,166 +761,197 @@ export default function App() {
     if (idx >= 0) {
       setAnimDir(idx > yearIdx ? 1 : -1);
       setYearIdx(idx);
-      setKey(k => k + 1);
+      setKey((k) => k + 1);
     }
-    setView("landing");
   };
-
-  const openYear = (yr) => {
-    setSelectedYear(yr || currentYear);
-    setView("year");
-  };
-
-  const openSpeaker = (speaker, yr) => {
-    setSelectedSpeaker({ ...speaker, yearNum: yr || selectedYear });
-    setView("speaker");
-  };
-
-  const backToLanding = () => { setView("landing"); setSelectedYear(null); setSelectedSpeaker(null); };
-  const backToYear = () => { setView("year"); setSelectedSpeaker(null); };
-
-  const listingTheme = selectedYear ? THEMES[selectedYear] : theme;
 
   return (
     <>
       <style>{CSS}</style>
-
       <div style={{
-        width:"100vw", height:"100vh", position:"relative",
-        overflow:"hidden", fontFamily:"inherit",
-        background:theme.bg,
-        transition:"background 0.4s ease",
+        width: "100vw", height: "100vh", position: "relative",
+        overflow: "hidden", fontFamily: "inherit",
+        background: theme.bg,
+        transition: "background 0.4s ease",
       }}>
-
-        {/* ── LANDING VIEW ── */}
-        {view === "landing" && (
-          <>
-            {/* Year card (full screen) */}
-            <div key={key} style={{
-              position:"absolute", inset:0,
-              animation:"fadeInUp 0.35s ease forwards",
-            }}>
-              <YearCard
-                year={currentYear}
-                theme={theme}
-                isActive={true}
-                onClick={() => openYear(currentYear)}
-              />
-            </div>
-
-            {/* Left arrow */}
-            <button
-              onClick={() => navigate(1)}
-              disabled={yearIdx >= ALL_YEARS.length - 1}
-              style={{
-                position:"fixed", left:20, top:"50%", transform:"translateY(-50%)",
-                background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)",
-                border:`1px solid ${theme.accent}44`, borderRadius:"50%",
-                width:52, height:52, display:"flex", alignItems:"center", justifyContent:"center",
-                cursor: yearIdx >= ALL_YEARS.length - 1 ? "not-allowed" : "pointer",
-                opacity: yearIdx >= ALL_YEARS.length - 1 ? 0.3 : 0.9,
-                transition:"all 0.2s", zIndex:50, color:theme.text,
-              }}
-              onMouseEnter={e => e.currentTarget.style.background=`${theme.accent}33`}
-              onMouseLeave={e => e.currentTarget.style.background="rgba(0,0,0,0.5)"}
-            >
-              <ChevronLeft size={22} />
-            </button>
-
-            {/* Right arrow */}
-            <button
-              onClick={() => navigate(-1)}
-              disabled={yearIdx <= 0}
-              style={{
-                position:"fixed", right:20, top:"50%", transform:"translateY(-50%)",
-                background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)",
-                border:`1px solid ${theme.accent}44`, borderRadius:"50%",
-                width:52, height:52, display:"flex", alignItems:"center", justifyContent:"center",
-                cursor: yearIdx <= 0 ? "not-allowed" : "pointer",
-                opacity: yearIdx <= 0 ? 0.3 : 0.9,
-                transition:"all 0.2s", zIndex:50, color:theme.text,
-              }}
-              onMouseEnter={e => e.currentTarget.style.background=`${theme.accent}33`}
-              onMouseLeave={e => e.currentTarget.style.background="rgba(0,0,0,0.5)"}
-            >
-              <ChevronRight size={22} />
-            </button>
-
-            {/* Year dots indicator */}
-            <div style={{
-              position:"fixed", bottom:32, left:"50%", transform:"translateX(-50%)",
-              display:"flex", gap:8, zIndex:50,
-            }}>
-              {ALL_YEARS.map((yr, i) => (
-                <button key={yr}
-                  onClick={() => goToYear(yr)}
-                  style={{
-                    width: i === yearIdx ? 24 : 8,
-                    height:8, borderRadius:4,
-                    background: i === yearIdx ? theme.accent : `${theme.accent}44`,
-                    border:"none", cursor:"pointer", padding:0,
-                    transition:"all 0.3s ease",
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Hint text */}
-            <div style={{
-              position:"fixed", bottom:72, left:"50%", transform:"translateX(-50%)",
-              fontSize:12, color:theme.muted, letterSpacing:1, zIndex:50,
-              textTransform:"uppercase",
-            }}>
-              Cliquez pour explorer · ← → pour naviguer
-            </div>
-          </>
-        )}
-
-        {/* ── YEAR LISTING VIEW ── */}
-        {view === "year" && selectedYear && (
-          <div className="slide-in" style={{ position:"absolute", inset:0, zIndex:20 }}>
-            <YearListing
-              year={selectedYear}
-              theme={listingTheme}
-              onBack={backToLanding}
-              onSpeakerClick={(s) => openSpeaker(s, selectedYear)}
-            />
-          </div>
-        )}
-
-        {/* ── SPEAKER DETAIL VIEW ── */}
-        {view === "speaker" && selectedSpeaker && (
-          <div className="slide-in" style={{ position:"absolute", inset:0, zIndex:30 }}>
-            <SpeakerDetail
-              speaker={selectedSpeaker}
-              year={selectedSpeaker.yearNum}
-              theme={THEMES[selectedSpeaker.yearNum] || theme}
-              onBack={backToYear}
-            />
-          </div>
-        )}
-
-        {/* ── NAVBAR (always visible in landing) ── */}
-        {view === "landing" && (
-          <NavBar
-            currentYear={currentYear}
-            onYearSelect={goToYear}
-            onSearchOpen={() => setSearchOpen(true)}
+        {/* Year card (full screen) */}
+        <div key={key} style={{
+          position: "absolute", inset: 0,
+          animation: "fadeInUp 0.35s ease forwards",
+        }}>
+          <YearCard
+            year={currentYear}
             theme={theme}
+            isActive={true}
+            onClick={() => nav(`/year/${currentYear}`)}
           />
-        )}
+        </div>
 
-        {/* ── SEARCH MODAL ── */}
+        {/* Left arrow */}
+        <button
+          onClick={() => navigateYear(1)}
+          disabled={yearIdx >= ALL_YEARS.length - 1}
+          style={{
+            position: "fixed", left: 20, top: "50%", transform: "translateY(-50%)",
+            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)",
+            border: `1px solid ${theme.accent}44`, borderRadius: "50%",
+            width: 52, height: 52, display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: yearIdx >= ALL_YEARS.length - 1 ? "not-allowed" : "pointer",
+            opacity: yearIdx >= ALL_YEARS.length - 1 ? 0.3 : 0.9,
+            transition: "all 0.2s", zIndex: 50, color: theme.text,
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = `${theme.accent}33`}
+          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(0,0,0,0.5)"}
+        >
+          <ChevronLeft size={22} />
+        </button>
+
+        {/* Right arrow */}
+        <button
+          onClick={() => navigateYear(-1)}
+          disabled={yearIdx <= 0}
+          style={{
+            position: "fixed", right: 20, top: "50%", transform: "translateY(-50%)",
+            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)",
+            border: `1px solid ${theme.accent}44`, borderRadius: "50%",
+            width: 52, height: 52, display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: yearIdx <= 0 ? "not-allowed" : "pointer",
+            opacity: yearIdx <= 0 ? 0.3 : 0.9,
+            transition: "all 0.2s", zIndex: 50, color: theme.text,
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = `${theme.accent}33`}
+          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(0,0,0,0.5)"}
+        >
+          <ChevronRight size={22} />
+        </button>
+
+        {/* Year dots indicator */}
+        <div style={{
+          position: "fixed", bottom: 32, left: "50%", transform: "translateX(-50%)",
+          display: "flex", gap: 8, zIndex: 50,
+        }}>
+          {ALL_YEARS.map((yr, i) => (
+            <button key={yr}
+              onClick={() => goToYear(yr)}
+              style={{
+                width: i === yearIdx ? 24 : 8,
+                height: 8, borderRadius: 4,
+                background: i === yearIdx ? theme.accent : `${theme.accent}44`,
+                border: "none", cursor: "pointer", padding: 0,
+                transition: "all 0.3s ease",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Hint text */}
+        <div style={{
+          position: "fixed", bottom: 72, left: "50%", transform: "translateX(-50%)",
+          fontSize: 12, color: theme.muted, letterSpacing: 1, zIndex: 50,
+          textTransform: "uppercase",
+        }}>
+          Cliquez pour explorer · ← → pour naviguer
+        </div>
+
+        {/* Navbar */}
+        <NavBar
+          currentYear={currentYear}
+          onYearSelect={(yr) => { nav(`/year/${yr}`); }}
+          onSearchOpen={() => setSearchOpen(true)}
+          theme={theme}
+        />
+
+        {/* Search modal */}
         {searchOpen && (
           <SearchModal
             onClose={() => setSearchOpen(false)}
             onSelectSpeaker={(s, yr) => {
               setSearchOpen(false);
-              openSpeaker(s, yr);
+              nav(`/year/${yr}/speaker/${toSlug(s.name)}`);
             }}
-            onSelectYear={(yr) => goToYear(yr)}
+            onSelectYear={(yr) => {
+              setSearchOpen(false);
+              nav(`/year/${yr}`);
+            }}
           />
         )}
+      </div>
+    </>
+  );
+}
+
+// ════════════════════════════════════════════════════════
+// YEAR PAGE
+// ════════════════════════════════════════════════════════
+function YearPage() {
+  const { year } = useParams();
+  const nav = useNavigate();
+  const yr = parseInt(year, 10);
+  const theme = THEMES[yr] || THEMES[ALL_YEARS[0]];
+
+  return (
+    <>
+      <style>{CSS}</style>
+      <div style={{
+        width: "100vw", height: "100vh", position: "relative",
+        overflow: "hidden", background: theme.bg,
+      }}>
+        <YearListing
+          year={yr}
+          theme={theme}
+          onBack={() => nav("/")}
+          onSpeakerClick={(s) => nav(`/year/${yr}/speaker/${toSlug(s.name)}`)}
+        />
+      </div>
+    </>
+  );
+}
+
+// ════════════════════════════════════════════════════════
+// SPEAKER PAGE
+// ════════════════════════════════════════════════════════
+function SpeakerPage() {
+  const { year, slug } = useParams();
+  const nav = useNavigate();
+  const yr = parseInt(year, 10);
+  const theme = THEMES[yr] || THEMES[ALL_YEARS[0]];
+  const speaker = findSpeakerBySlug(yr, slug);
+
+  if (!speaker) {
+    return (
+      <>
+        <style>{CSS}</style>
+        <div style={{
+          width: "100vw", height: "100vh", display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          background: theme.bg, color: theme.text, gap: 20,
+        }}>
+          <div style={{ fontSize: 18 }}>Speaker introuvable.</div>
+          <button onClick={() => nav(`/year/${yr}`)} style={{
+            background: "none", border: `1px solid ${theme.accent}`,
+            borderRadius: 8, color: theme.accent, padding: "10px 20px",
+            cursor: "pointer", fontSize: 14, fontFamily: "inherit",
+          }}>
+            ← Retour {yr}
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <style>{CSS}</style>
+      <div style={{
+        width: "100vw", height: "100vh", position: "relative",
+        overflow: "hidden", background: theme.bg,
+      }}>
+        <SpeakerDetail
+          speaker={speaker}
+          year={yr}
+          theme={theme}
+          onBack={() => nav(`/year/${yr}`)}
+        />
       </div>
     </>
   );
